@@ -14,20 +14,43 @@
 
 
   <script>
-    fetch('data/jaringan.json')
-      .then(res => res.json())
-      .then(data => {
-        new Chart(document.getElementById('grafik'), {
-          type: 'line',
-          data: {
-            labels: data.waktu,
-            datasets: [{
-              label: 'Bandwidth (Mbps)',
-              data: data.bandwidth
-            }]
-          }
-        });
-      });
-  </script>
+let index = 0;
+let dataCache;
+
+fetch('data/jaringan.json')
+  .then(res => res.json())
+  .then(data => {
+    dataCache = data;
+    updateChart();
+    setInterval(updateChart, 2000); // update tiap 2 detik
+});
+
+let chart;
+
+function updateChart() {
+  const labels = dataCache.waktu.slice(0, index + 1);
+  const bandwidth = dataCache.bandwidth.slice(0, index + 1);
+
+  if (!chart) {
+    chart = new Chart(document.getElementById('grafikBandwidth'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Bandwidth (Mbps)',
+          data: bandwidth
+        }]
+      }
+    });
+  } else {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = bandwidth;
+    chart.update();
+  }
+
+  index++;
+  if (index >= dataCache.waktu.length) index = 0;
+}
+</script>
 </body>
 </html>
